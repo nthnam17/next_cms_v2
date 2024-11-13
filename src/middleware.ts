@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   try {
-    const accessToken = Cookies.get("accessToken") || null;
+    const accessToken = request.cookies.get("accessToken")?.value;
     if (!accessToken) {
       if (request.nextUrl.pathname === "/dang-nhap") {
         return NextResponse.next();
@@ -18,6 +18,14 @@ export async function middleware(request: NextRequest) {
     if (request.nextUrl.pathname === "/dang-xuat") {
       Cookies.remove("accessToken");
       const response = NextResponse.redirect(new URL("/", request.url));
+      return response;
+    }
+
+    if (request.nextUrl.pathname === "/") {
+      Cookies.remove("accessToken");
+      const response = NextResponse.redirect(
+        new URL("/dashboard", request.url)
+      );
       return response;
     }
     return NextResponse.next();

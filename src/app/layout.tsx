@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Toast } from "@/components/ui/toast";
+import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
 
@@ -44,7 +44,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
-        {/* <Toast /> */}
+        <Toaster position="top-right" />
       </body>
     </html>
   );

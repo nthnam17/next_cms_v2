@@ -1,16 +1,16 @@
 "use client";
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
-
 import { SETTINGS } from "@/utils/settings";
-
 import Link from "next/link";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { isNullOrEmpty } from "@/utils/validate";
 import { fnLogin } from "@/stores/auth";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -59,20 +59,37 @@ export default function LoginPage() {
   const handleSubmit = async () => {
     if (val()) return;
 
-    const payload = {
-      username,
-      password,
-    };
-
     try {
-      const res: any = await fnLogin(payload);
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: username, password: password }),
+      });
 
-      if (res.error.code == 200) {
+      const data = await response.json();
+
+      if (response.ok) {
+        Cookies.set("accessstoken", data?.accessToken);
+        toast.success("Đăng nhập thành công", {
+          description: "Chào mừng bạn đến với ChillAndFree 420 CMS",
+          action: {
+            label: "Ẩn đi",
+            onClick: () => "",
+          },
+        });
+
+        window.location.href = "/dashboard";
+      } else {
+        toast.error("Đăng nhập thất bại", {
+          description: data.message,
+          action: {
+            label: "Ẩn đi",
+            onClick: () => "",
+          },
+        });
       }
-
-      console.log(res);
-
-      console.log(payload);
     } catch (error) {
       console.log(`Error: ${error}`);
     }

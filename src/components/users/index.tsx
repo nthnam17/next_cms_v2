@@ -45,69 +45,91 @@ import {
   PaginationPrevious,
 } from "../ui/pagination";
 import { useEffect, useState } from "react";
-import { fnGetListUsers } from "@/stores/users";
-import { useStore } from "@/hooks/use-store";
 import { IUserParams, IUsersTable } from "@/types/user";
+import { toast } from "sonner";
+import { Badge } from "../ui/badge";
+import { EllipsisVertical, Trash2 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import { ScrollArea } from "../ui/scrollarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import CreateUser from "./create";
+import Image from "next/image";
+import UpdateUser from "./update";
 
 export default function ListUsers() {
-  const [lstUsers, SetLstUser] = useState<IUsersTable>();
+  const [lstUsers, setLstUser] = useState<IUsersTable[] | []>();
   const [params, SetParams] = useState<IUserParams>({
     name: "",
+    status: "",
   });
+
+  const headerTable = [
+    {
+      name: "STT",
+      class_name: "w-[50px]",
+    },
+    {
+      name: "Ảnh đại diện",
+      class_name: "w-[160px]",
+    },
+    {
+      name: "Tên tài khoản",
+      class_name: "",
+    },
+    {
+      name: "Tên đầy đủ",
+      class_name: "",
+    },
+    {
+      name: "Trạng thái",
+      class_name: "",
+    },
+    {
+      name: "Thao tác",
+      class_name: "w-[100px]",
+    },
+  ];
 
   useEffect(() => {
     handleGetLstUsers(params);
-  }, [params]);
+  }, []);
 
   const handleGetLstUsers = async (params: any) => {
-    const res: any = await fnGetListUsers(params);
-    console.log(res);
+    const path = "users";
+    const queryString = new URLSearchParams(params).toString();
+    try {
+      const req = await fetch(`/api/${path}?${queryString}`);
+      const res = await req.json();
+
+      if (res.status == 200) {
+        setLstUser(res.data.items);
+      } else {
+        toast.error("Lấy dữ liệu thất bại", {
+          description: "Có lỗi xin vui lòng thử lại sau",
+          action: {
+            label: "Ẩn đi",
+            onClick: () => "",
+          },
+        });
+      }
+    } catch (error) {
+      console.error(`Fetch error: ${error}`);
+    }
   };
 
-  const invoices = [
-    {
-      invoice: "INV001",
-      paymentStatus: "Paid",
-      totalAmount: "$250.00",
-      paymentMethod: "Credit Card",
-    },
-    {
-      invoice: "INV002",
-      paymentStatus: "Pending",
-      totalAmount: "$150.00",
-      paymentMethod: "PayPal",
-    },
-    {
-      invoice: "INV003",
-      paymentStatus: "Unpaid",
-      totalAmount: "$350.00",
-      paymentMethod: "Bank Transfer",
-    },
-    {
-      invoice: "INV004",
-      paymentStatus: "Paid",
-      totalAmount: "$450.00",
-      paymentMethod: "Credit Card",
-    },
-    {
-      invoice: "INV005",
-      paymentStatus: "Paid",
-      totalAmount: "$550.00",
-      paymentMethod: "PayPal",
-    },
-    {
-      invoice: "INV006",
-      paymentStatus: "Pending",
-      totalAmount: "$200.00",
-      paymentMethod: "Bank Transfer",
-    },
-    {
-      invoice: "INV007",
-      paymentStatus: "Unpaid",
-      totalAmount: "$300.00",
-      paymentMethod: "Credit Card",
-    },
-  ];
   return (
     <Card className="w-full">
       <CardHeader>
@@ -152,28 +174,99 @@ export default function ListUsers() {
           </AccordionItem>
         </Accordion>
       </CardHeader>
+
       <CardContent>
-        <Table>
+        <div className="pb-4 float-right">
+          <CreateUser></CreateUser>
+        </div>
+        <Table className="h-[1000px] overflow-y-scroll h-10 bg-muted">
           {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Invoice</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+              {headerTable &&
+                headerTable.map((_header, index) => (
+                  <TableHead key={index} className={_header.class_name}>
+                    {_header.name}
+                  </TableHead>
+                ))}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow key={invoice.invoice}>
-                <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                <TableCell>{invoice.paymentStatus}</TableCell>
-                <TableCell>{invoice.paymentMethod}</TableCell>
-                <TableCell className="text-right">
-                  {invoice.totalAmount}
-                </TableCell>
-              </TableRow>
-            ))}
+            {lstUsers &&
+              lstUsers.map((_item, index) => (
+                <TableRow key={index + 1}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>
+                    <Image
+                      className="object-contain rounded-full"
+                      src={
+                        _item.image
+                          ? _item.image
+                          : "/assets/image/user-default.jpg"
+                      }
+                      alt=""
+                      width={60}
+                      height={60}
+                    ></Image>
+                  </TableCell>
+                  <TableCell>{_item.username}</TableCell>
+                  <TableCell>{_item.name}</TableCell>
+                  <TableCell>
+                    {_item.status == 1 ? (
+                      <Badge variant={"success"}>Hoạt động</Badge>
+                    ) : (
+                      <Badge variant={"error"}>Khóa</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <DropdownMenu>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                // variant="outline"
+                                className="w-[50px]"
+                              >
+                                <EllipsisVertical size={55} />
+                              </Button>
+                            </DropdownMenuTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Thao tác</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <DropdownMenuContent className="w-50" align="center">
+                        <DropdownMenuItem
+                          className="hover:cursor-pointer"
+                          asChild
+                          onClick={() => {
+                            console.log(1);
+                          }}
+                        >
+                          <UpdateUser></UpdateUser>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem
+                            className="hover:cursor-pointer hover:bg-red-500"
+                            asChild
+                          >
+                            <div className="w-full flex items-center justify-item-center">
+                              <Trash2 size={20} />
+                              <p className="text-sm font-medium leading-none pl-2">
+                                Xóa
+                              </p>
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
           {/* <TableFooter>
             <TableRow>

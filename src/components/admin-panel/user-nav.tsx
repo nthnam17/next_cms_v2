@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { LayoutGrid, LogOut, User } from "lucide-react";
+import Cookies from "js-cookie";
+import { cookies } from "next/headers";
 
 import { SETTINGS } from "@/utils/settings";
 
@@ -57,9 +59,11 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="hover:cursor-pointer" onClick={() => {}}>
-          <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
-          {SETTINGS.general.logout}
+        <DropdownMenuItem className="hover:cursor-pointer" asChild>
+          <Link href="/dang-xuat" className="flex items-center">
+            <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
+            {SETTINGS.general.logout}
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

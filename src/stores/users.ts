@@ -1,9 +1,9 @@
-import { fetchData } from "@/utils/fetchData";
+// import { customFetch, fetchData } from "@/utils/fetchData";
 
-export const fnGetListUsers = async (params: Record<string, string>) => {
-  const queryString = new URLSearchParams(params).toString();
-  return await fetchData(`/users?${queryString}`);
-};
+// export const fnGetListUsers = async (params: Record<string, string>) => {
+//   const queryString = new URLSearchParams(params).toString();
+//   return await customFetch(`/users?${queryString}`);
+// };
 
 // export const fnGetDetailHouse = async (houseId: string) => {
 //     return await fetchData(`/project/${houseId}`);

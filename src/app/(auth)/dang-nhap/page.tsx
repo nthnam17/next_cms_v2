@@ -71,7 +71,7 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        Cookies.set("accessstoken", data?.accessToken);
+        Cookies.set("accessstoken", data?.accessToken, { expires: 10 });
         toast.success("Đăng nhập thành công", {
           description: "Chào mừng bạn đến với ChillAndFree 420 CMS",
           action: {
